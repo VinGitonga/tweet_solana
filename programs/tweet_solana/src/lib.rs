@@ -8,7 +8,7 @@ declare_id!("Axi1KZky2SVgKBY3HCkecagLv54GQw8YoTTeWQuCM7PP");
 const USER_NAME_LEGNTH: usize = 50;
 const USER_EMAIL_LEGNTH: usize = 100;
 const MAX_TWEET_LENGTH: usize = 1024;
-
+const MAX_COMMENT_LENGTH: usize = 1024;
 
 #[program]
 pub mod tweet_solana {
@@ -74,9 +74,37 @@ pub mod tweet_solana {
         tweet.tweet_index = state.tweet_count;
         // increment the tweet count
         state.tweet_count += 1;
+        // set the tweet timestamp
+        tweet.tweet_time = ctx.accounts.clock.unix_timestamp;
 
         Ok(())
     }
+
+    pub fn create_comment (
+        ctx: Context<CreateComment>,
+        comment_content: String,
+        comment_author: String,
+    ) -> Result<()> {
+        // Get the tweet first
+        let tweet = &mut ctx.accounts.tweet;
+        // Get the comment
+        let comment = &mut ctx.accounts.comment;
+        // Now set the comment authority
+        comment.authority = ctx.accounts.authority.key();
+        // Set the comment content
+        comment.comment_content = comment_content;
+        // Set the comment author
+        comment.comment_author = comment_author;
+        // Set the comment index to tweet comment count
+        comment.comment_index = tweet.tweet_comment_count;
+        // Increment the tweet comment count
+        tweet.tweet_comment_count += 1;
+        // Set the comment clock time
+        comment.comment_time = ctx.accounts.clock.unix_timestamp;
+
+        Ok(())
+    }
+
 }
 
 
@@ -110,8 +138,7 @@ pub struct CreateUser<'info> {
         seeds = [b"user".as_ref(), authority.key().as_ref()],
         bump,
         payer = authority,
-        space = size_of::<UserAccount>() + USER_NAME_LEGNTH + USER_EMAIL_LEGNTH + 8, // size of user account and USER_NAME_LEGNTH + USER_EMAIL_LEGNTH + 8 bytes for discriminator
-
+        space = size_of::<UserAccount>() + USER_NAME_LEGNTH + USER_EMAIL_LEGNTH + MAX_COMMENT_LENGTH + 8, // size of user account and USER_NAME_LEGNTH + USER_EMAIL_LEGNTH + 8 bytes for discriminator
     )]
     pub user: Account<'info, UserAccount>,
 
@@ -165,6 +192,41 @@ pub struct CreateTweet<'info> {
     pub clock: Sysvar<'info, Clock>,
 }
 
+// Create Comment Context
+#[derive(Accounts)]
+pub struct CreateComment<'info> {
+    // authenticate tweet account
+    #[account(
+        mut,
+        seeds = [b"tweet".as_ref(), tweet.tweet_index.to_be_bytes().as_ref()],
+        bump,
+    )]
+    pub tweet: Account<'info, TweetAccount>,
+    // Authenticate comment account
+    #[account(
+        init,
+        seeds = [b"comment".as_ref(), tweet.tweet_index.to_be_bytes().as_ref(), tweet.tweet_comment_count.to_be_bytes().as_ref()],
+        bump,
+        payer = authority,
+        space = size_of::<CommentAccount>() + USER_EMAIL_LEGNTH + USER_NAME_LEGNTH + MAX_TWEET_LENGTH + 8, // size of comment account and USER_EMAIL_LEGNTH + USER_NAME_LEGNTH + MAX_TWEET_LENGTH + 8 bytes for discriminator
+    )]
+    pub comment: Account<'info, CommentAccount>,
+
+    // Authority who pays for the transaction fee
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    // System program for solana
+    pub system_program: Program<'info, System>,
+    // Save the token program from spl_token
+    #[account(constraint = token_program.key == &token::ID)]
+    pub token_program: Program<'info, Token>,
+
+    // Clock to save the comment created.
+    pub clock: Sysvar<'info, Clock>,
+}
+
+
+
 // State Account
 #[account]
 pub struct StateAccount {
@@ -201,3 +263,19 @@ pub struct TweetAccount {
     // tweet created at
     pub tweet_time: i64,
 }
+
+// Comment Account 
+#[account]
+pub struct CommentAccount {
+    // authority
+    pub authority: Pubkey,
+    // comment content
+    pub comment_content: String,
+    // comment author
+    pub comment_author: String,
+    // comment index
+    pub comment_index: u64,
+    // comment created at
+    pub comment_time: i64,
+}
+
