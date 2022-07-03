@@ -1,135 +1,82 @@
-import { useState } from "react"
+import { useState, useEffect } from 'react';
+import { Box, Flex } from "@chakra-ui/react";
 import AddTweet from './AddTweet';
-import { chakra, Box, Flex, Image, Link, IconButton, Input, Button } from "@chakra-ui/react";
-import { BiMessageRounded } from "react-icons/bi"
-import { BsHeart } from "react-icons/bs"
-import { FaRetweet } from "react-icons/fa"
-import { FiShare } from "react-icons/fi"
 import Side from './Side';
+import Tweet from './Tweet';
+import Signup from './Signup';
+
+import { useWallet } from "@solana/wallet-adapter-react"
+import { SOLANA_HOST } from "../utils/constants";
+import { getProgramInstance } from "../utils/utils";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
+
+
+const anchor = require("@project-serum/anchor");
+const utf8 = anchor.utils.bytes.utf8;
+const { BN, web3 } = anchor;
+const { SystemProgram } = web3;
+
+
+// Setup the default account
+const defaultAccount = {
+    tokenProgram: TOKEN_PROGRAM_ID,
+    clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+    systemProgram: SystemProgram.programId,
+}
+
+
+
 
 const Feed = () => {
+    const [isAccount, setIsAccount] = useState(false);
+    const [userDetail, setUserDetail] = useState();
+    const wallet = useWallet();
+
+    const connection = new anchor.web3.Connection(SOLANA_HOST);
+
+    const program = getProgramInstance(connection, wallet);
+
+    // check account is created in blockchain
+    const checkAccount = async () => {
+        let [user_pda] = await anchor.web3.PublicKey.findProgramAddress(
+            [utf8.encode('user'), wallet.publicKey.toBuffer()],
+            program.programId,
+        )
+
+        // confirm if account exists using try and catch block
+        try {
+            const userInfo = await program.account.userAccount.fetch(user_pda);
+            console.log(userInfo);
+            setUserDetail(userInfo);
+            setIsAccount(true);
+        } catch (e) {
+            console.log(e);
+            setIsAccount(false);
+        }
+    }
+
+    useEffect(() => {
+        if (wallet.connected) {
+            checkAccount();
+        }
+    }, [wallet.connected])
+
     return (
-        <Flex fontFamily={"Poppins"} px={2} py={12} mx="auto">
-            <Side />
-            <Box mx="auto" w={{ lg: 8 / 12, xl: 5 / 12 }}>
-                <AddTweet />
-                {[...Array(5)].map((_, i) => <Tweet key={i} />)}
-            </Box>
-        </Flex>
+        <>
+            {isAccount ? (
+                <Flex fontFamily={"Poppins"} px={2} py={12} mx="auto">
+                    <Side />
+                    <Box mx="auto" w={{ lg: 8 / 12, xl: 5 / 12 }}>
+                        <AddTweet />
+                        {[...Array(5)].map((_, i) => <Tweet key={i} />)}
+                    </Box>
+                </Flex>
+            ) : (
+                <Signup />
+            )}
+        </>
     );
 };
 
-// Create Tweet Component
-const Tweet = () => {
-    const [showReplyInput, setShowReplyInput] = useState(false);
-
-    const handleReplyClick = () => setShowReplyInput(!showReplyInput);
-
-    return (
-        <Box mt={8}>
-            <Flex alignItems="center">
-                <Flex alignItems="center">
-                    <Image
-                        h={10}
-                        fit="cover"
-                        rounded="full"
-                        src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
-                        alt="Avatar"
-                    />
-                    <Link
-                        mx={2}
-                        fontWeight="bold"
-                        color="gray.700"
-                        _dark={{
-                            color: "gray.200",
-                        }}
-                    >
-                        Jone Doe
-                    </Link>
-                </Flex>
-                <chakra.span
-                    mx={1}
-                    fontSize="sm"
-                    color="gray.600"
-                    _dark={{
-                        color: "gray.300",
-                    }}
-                >
-                    30 JUNE 2022
-                </chakra.span>
-            </Flex>
-            <chakra.p
-                mt={2}
-                fontSize="sm"
-                color="gray.600"
-                _dark={{
-                    color: "gray.400",
-                }}
-            >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Molestie
-                parturient et sem ipsum volutpat vel. Natoque sem et aliquam mauris
-                egestas quam volutpat viverra. In pretium nec senectus erat. Et
-                malesuada lobortis.
-            </chakra.p>
-            <Flex alignItems="center" my={4} justifyContent={'space-between'}>
-                <IconButton
-                    variant='ghost'
-                    colorScheme='teal'
-                    aria-label='Reply'
-                    icon={<BiMessageRounded />}
-                    fontSize='20px'
-                    borderRadius={'full'}
-                    onClick={handleReplyClick}
-                />
-                <IconButton
-                    variant='ghost'
-                    colorScheme='teal'
-                    aria-label='Retweet'
-                    icon={<FaRetweet />}
-                    fontSize='20px'
-                    borderRadius={'full'}
-                />
-                <IconButton
-                    variant='ghost'
-                    colorScheme='teal'
-                    aria-label='Like'
-                    icon={<BsHeart />}
-                    fontSize='20px'
-                    borderRadius={'full'}
-                />
-                <IconButton
-                    variant='ghost'
-                    colorScheme='teal'
-                    aria-label='Share'
-                    icon={<FiShare />}
-                    fontSize='20px'
-                    borderRadius={'full'}
-                />
-            </Flex>
-            {showReplyInput && <AddReply />}
-            <hr style={{ backgroundColor: "#cbd5e0", color: "#cbd5e0", height: 2 }} />
-        </Box>
-    )
-}
-
-const AddReply = () => {
-    return (
-        <Box my={4} ml={4} >
-            <Flex alignItems="center">
-                <Image
-                    h={10}
-                    fit="cover"
-                    rounded="full"
-                    src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
-                    alt="Avatar"
-                />
-                <Input mx={2} color={"gray.700"} variant="flushed" placeholder="Tweet your Reply" fontSize={"md"} size={'lg'} />
-                <Button variant="solid" colorScheme={"messenger"} borderRadius={'lg'} >
-                    Reply
-                </Button>
-            </Flex>
-        </Box>
-    )
-}
 
 export default Feed;

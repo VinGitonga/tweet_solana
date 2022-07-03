@@ -1,0 +1,255 @@
+{
+    "version": "0.1.0",
+    "name": "tweet_solana",
+    "instructions": [
+        {
+            "name": "createState",
+            "accounts": [
+                {
+                    "name": "state",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authority",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": []
+        },
+        {
+            "name": "createUser",
+            "accounts": [
+                {
+                    "name": "user",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authority",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "email",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "createTweet",
+            "accounts": [
+                {
+                    "name": "state",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tweet",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authority",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "tweetContent",
+                    "type": "string"
+                },
+                {
+                    "name": "tweetAuthor",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "createComment",
+            "accounts": [
+                {
+                    "name": "tweet",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "comment",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authority",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "commentContent",
+                    "type": "string"
+                },
+                {
+                    "name": "commentAuthor",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "StateAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "authority",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "tweetCount",
+                        "type": "u64"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "UserAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "userName",
+                        "type": "string"
+                    },
+                    {
+                        "name": "userEmail",
+                        "type": "string"
+                    },
+                    {
+                        "name": "userWalletAddress",
+                        "type": "publicKey"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "TweetAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "authority",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "tweetContent",
+                        "type": "string"
+                    },
+                    {
+                        "name": "tweetAuthor",
+                        "type": "string"
+                    },
+                    {
+                        "name": "tweetCommentCount",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "tweetIndex",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "tweetTime",
+                        "type": "i64"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "CommentAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "authority",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "commentContent",
+                        "type": "string"
+                    },
+                    {
+                        "name": "commentAuthor",
+                        "type": "string"
+                    },
+                    {
+                        "name": "commentIndex",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "commentTime",
+                        "type": "i64"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -5,6 +5,8 @@ import {
     Stack,
     useColorModeValue,
 } from '@chakra-ui/react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+
 
 const Cta = () => {
     return (
@@ -65,12 +67,7 @@ const Cta = () => {
                                 spacing={{ base: 4, md: 2 }}
                                 justifyContent="center"
                             >
-                                <Button
-                                    colorScheme="teal"
-                                    size="lg"
-                                >
-                                    Connect Wallet
-                                </Button>
+                                <WalletMultiButton />
                                 <Button
                                     bg="white"
                                     color={"gray.900"}

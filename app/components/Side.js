@@ -16,6 +16,8 @@ import { BsBookmarkFill } from "react-icons/bs"
 import { RiFileList3Line } from "react-icons/ri"
 import { FiUser } from "react-icons/fi"
 import { CgMoreO } from "react-icons/cg"
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+
 
 const Side = () => {
     return (
@@ -62,7 +64,7 @@ const Side = () => {
                 <NavItem icon={RiFileList3Line} text={"Lists"} />
                 <NavItem icon={FiUser} text={"Profile"} />
                 <NavItem icon={CgMoreO} text={"More"} />
-                <Button my={2} colorScheme='messenger'>Connect Wallet</Button>
+                <WalletMultiButton />
 
                 <Flex alignItems="center" mt={8} >
                     <Image
