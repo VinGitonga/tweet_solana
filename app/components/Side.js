@@ -19,7 +19,7 @@ import { CgMoreO } from "react-icons/cg"
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 
-const Side = () => {
+const Side = ({ userDetail, getTweets }) => {
     return (
         <Box
             as="nav"
@@ -59,7 +59,7 @@ const Side = () => {
                 <NavItem icon={GoHome} text={"Home"} />
                 <NavItem icon={FaHashtag} text={"Explore"} />
                 <NavItem icon={FaBell} text={"Notifications"} />
-                <NavItem icon={IoMailOutline} text={"Messages"} />
+                <NavItem icon={IoMailOutline} text={"Refresh Tweets"} isButton clickAction={getTweets} />
                 <NavItem icon={BsBookmarkFill} text={"Bookmarks"} />
                 <NavItem icon={RiFileList3Line} text={"Lists"} />
                 <NavItem icon={FiUser} text={"Profile"} />
@@ -71,7 +71,7 @@ const Side = () => {
                         h={10}
                         fit="cover"
                         rounded="full"
-                        src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                        src={`https://avatars.dicebear.com/api/adventurer/${userDetail.userName.toLowerCase().replaceAll(" ", "")}.svg`}
                         alt="Avatar"
                     />
                     <Link
@@ -82,7 +82,7 @@ const Side = () => {
                             color: "gray.200",
                         }}
                     >
-                        Jone Doe
+                        {userDetail.userName}
                     </Link>
                 </Flex>
             </Flex>
@@ -90,7 +90,7 @@ const Side = () => {
     )
 }
 
-const NavItem = ({ icon, text }) => {
+const NavItem = ({ icon, text, isButton=false, clickAction }) => {
     return (
         <Flex
             align="center"
@@ -98,6 +98,7 @@ const NavItem = ({ icon, text }) => {
             pl="4"
             py="3"
             cursor="pointer"
+            onClick={isButton && clickAction}
         >
             <Icon
                 mx="2"

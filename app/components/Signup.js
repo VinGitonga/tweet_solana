@@ -20,10 +20,12 @@ import { RiLoginCircleFill } from "react-icons/ri";
 import { HiOutlineMail } from "react-icons/hi";
 import { FiUser } from "react-icons/fi";
 
-export default function Signup() {
+export default function Signup({ signup }) {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const handleSubmit = () => signup(name, email)
 
     
     return (
@@ -98,6 +100,7 @@ export default function Signup() {
                                 _hover={{
                                     bg: "blue.500",
                                 }}
+                                onClick={handleSubmit}
                             >
                                 Sign in
                             </Button>

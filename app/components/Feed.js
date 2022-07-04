@@ -8,21 +8,12 @@ import Signup from './Signup';
 import { useWallet } from "@solana/wallet-adapter-react"
 import { SOLANA_HOST } from "../utils/constants";
 import { getProgramInstance } from "../utils/utils";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
+import useAuth from '../hooks/useAuth';
+import useTweets from "../hooks/useTweets"
 
 
 const anchor = require("@project-serum/anchor");
 const utf8 = anchor.utils.bytes.utf8;
-const { BN, web3 } = anchor;
-const { SystemProgram } = web3;
-
-
-// Setup the default account
-const defaultAccount = {
-    tokenProgram: TOKEN_PROGRAM_ID,
-    clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
-    systemProgram: SystemProgram.programId,
-}
 
 
 
@@ -30,11 +21,15 @@ const defaultAccount = {
 const Feed = () => {
     const [isAccount, setIsAccount] = useState(false);
     const [userDetail, setUserDetail] = useState();
+    const [tweetContent, setTweetContent] = useState("")
+    const[tweets, setTweets] = useState([])
     const wallet = useWallet();
 
     const connection = new anchor.web3.Connection(SOLANA_HOST);
 
     const program = getProgramInstance(connection, wallet);
+
+    const { signup } = useAuth()
 
     // check account is created in blockchain
     const checkAccount = async () => {
@@ -61,18 +56,38 @@ const Feed = () => {
         }
     }, [wallet.connected])
 
+    const {
+        getTweetComments,
+        getTweets,
+        createTweetComment,
+        newTweet
+    } = useTweets(setTweets, tweetContent, setTweetContent, userDetail)
+
     return (
         <>
             {isAccount ? (
                 <Flex fontFamily={"Poppins"} px={2} py={12} mx="auto">
-                    <Side />
+                    <Side userDetail={userDetail} getTweets={getTweets} />
                     <Box mx="auto" w={{ lg: 8 / 12, xl: 5 / 12 }}>
-                        <AddTweet />
-                        {[...Array(5)].map((_, i) => <Tweet key={i} />)}
+                        <AddTweet 
+                            tweetContent={tweetContent} 
+                            setTweetContent={setTweetContent} 
+                            sendTweet={newTweet} 
+                            userName={userDetail.userName} 
+                        />
+                        {tweets.map(tweet => (
+                            <Tweet 
+                                tweetDetail={tweet.account} 
+                                key={tweet.account.tweetIndex} 
+                                userName={userDetail.userName} 
+                                createComment={createTweetComment}
+                                getTweetComments={getTweetComments}
+                            />
+                        ))}
                     </Box>
                 </Flex>
             ) : (
-                <Signup />
+                <Signup signup={signup} />
             )}
         </>
     );

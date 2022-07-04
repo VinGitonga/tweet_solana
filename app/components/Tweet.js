@@ -1,8 +1,8 @@
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Flex,
-    Image, 
+    Image,
     Link,
     chakra,
     IconButton,
@@ -12,11 +12,34 @@ import { BsHeart } from "react-icons/bs"
 import { FaRetweet } from "react-icons/fa"
 import { FiShare } from "react-icons/fi"
 import AddReply from './AddReply';
+import TweetComment from "./TweetComment"
+import TimeAgo from "javascript-time-ago"
+import en from "javascript-time-ago/locale/en.json"
 
-const Tweet = () => {
+
+TimeAgo.addDefaultLocale(en)
+
+const timeAgo = new TimeAgo("en-US")
+
+const Tweet = ({ tweetDetail, userName, createComment, getTweetComments }) => {
     const [showReplyInput, setShowReplyInput] = useState(false);
+    const [comments, setComments] = useState([])
+    const [showComments, setShowComments] = useState(false)
 
     const handleReplyClick = () => setShowReplyInput(!showReplyInput);
+
+    const saveComment = comment => createComment(tweetDetail.tweetIndex, tweetDetail.tweetCommentCount, comment)
+
+    const getComments = async () => {
+        let commentsTweet = await getTweetComments(tweetDetail.tweetIndex, tweetDetail.tweetCommentCount)
+        setComments(commentsTweet)
+        if (comments?.length > 0){
+            setShowComments(true)
+            console.log(showComments)
+        }
+    }
+
+
 
     return (
         <Box mt={8}>
@@ -26,7 +49,7 @@ const Tweet = () => {
                         h={10}
                         fit="cover"
                         rounded="full"
-                        src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                        src={`https://avatars.dicebear.com/api/adventurer/${tweetDetail.tweetAuthor.toLowerCase().replaceAll(" ", "")}.svg`}
                         alt="Avatar"
                     />
                     <Link
@@ -37,7 +60,7 @@ const Tweet = () => {
                             color: "gray.200",
                         }}
                     >
-                        Jone Doe
+                        {tweetDetail.tweetAuthor}
                     </Link>
                 </Flex>
                 <chakra.span
@@ -48,7 +71,7 @@ const Tweet = () => {
                         color: "gray.300",
                     }}
                 >
-                    30 JUNE 2022
+                    {timeAgo.format(new Date(tweetDetail.tweetTime * 1000), "twitter-now")}
                 </chakra.span>
             </Flex>
             <chakra.p
@@ -59,10 +82,7 @@ const Tweet = () => {
                     color: "gray.400",
                 }}
             >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Molestie
-                parturient et sem ipsum volutpat vel. Natoque sem et aliquam mauris
-                egestas quam volutpat viverra. In pretium nec senectus erat. Et
-                malesuada lobortis.
+                {tweetDetail.tweetContent}
             </chakra.p>
             <Flex alignItems="center" my={4} justifyContent={'space-between'}>
                 <IconButton
@@ -89,17 +109,21 @@ const Tweet = () => {
                     icon={<BsHeart />}
                     fontSize='20px'
                     borderRadius={'full'}
+                    onClick={getComments}
                 />
                 <IconButton
                     variant='ghost'
                     colorScheme='teal'
-                    aria-label='Share'
+                    // aria-label='Share'
                     icon={<FiShare />}
                     fontSize='20px'
                     borderRadius={'full'}
                 />
             </Flex>
-            {showReplyInput && <AddReply />}
+            {showReplyInput && <AddReply userName={userName} saveComment={saveComment} />}
+            {showComments && (
+                comments?.map(comment => <TweetComment commentDetail={comment} key={comment?.commentIndex} />)
+            )}
             <hr style={{ backgroundColor: "#cbd5e0", color: "#cbd5e0", height: 2 }} />
         </Box>
     )
